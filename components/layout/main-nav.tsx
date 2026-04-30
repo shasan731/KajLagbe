@@ -36,7 +36,7 @@ export async function MainNav() {
             <Menu size={21} />
             <span className="sr-only">Open menu</span>
           </summary>
-          <div className="absolute right-0 top-12 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+          <div className="fixed right-3 top-14 w-72 max-w-[calc(100vw-1.5rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
             <form action="/listings" className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input name="q" placeholder="Search tools or skills..." className="input pl-8" />
