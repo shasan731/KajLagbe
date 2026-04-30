@@ -17,11 +17,14 @@ export function UserAvatar({
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
         alt={name ?? ""}
         width={size}
         height={size}
+        loading="lazy"
+        decoding="async"
         className="rounded-full object-cover"
       />
     );

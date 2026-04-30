@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { fail, ok, type ActionResult } from "@/lib/actions";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const profileSchema = z.object({
@@ -25,7 +26,6 @@ const profileSchema = z.object({
     .url()
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  role: z.enum(["CUSTOMER", "PROVIDER"]),
 });
 
 export async function updateProfileAction(_prev: unknown, fd: FormData): Promise<ActionResult> {
@@ -34,30 +34,35 @@ export async function updateProfileAction(_prev: unknown, fd: FormData): Promise
   for (const [k, v] of fd.entries()) if (typeof v === "string") obj[k] = v;
   const parsed = profileSchema.safeParse(obj);
   if (!parsed.success) return fail("Invalid profile data.");
-  // Don't allow changing role away from ADMIN
-  const newRole = user.role === "ADMIN" ? "ADMIN" : parsed.data.role;
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: user.id },
-      data: { name: parsed.data.name, email: parsed.data.email ?? null, role: newRole },
-    }),
-    prisma.userProfile.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        bio: parsed.data.bio ?? null,
-        city: parsed.data.city ?? null,
-        addressArea: parsed.data.addressArea ?? null,
-        avatarUrl: parsed.data.avatarUrl ?? null,
-      },
-      update: {
-        bio: parsed.data.bio ?? null,
-        city: parsed.data.city ?? null,
-        addressArea: parsed.data.addressArea ?? null,
-        avatarUrl: parsed.data.avatarUrl ?? null,
-      },
-    }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { name: parsed.data.name, email: parsed.data.email ?? null },
+      }),
+      prisma.userProfile.upsert({
+        where: { userId: user.id },
+        create: {
+          userId: user.id,
+          bio: parsed.data.bio ?? null,
+          city: parsed.data.city ?? null,
+          addressArea: parsed.data.addressArea ?? null,
+          avatarUrl: parsed.data.avatarUrl ?? null,
+        },
+        update: {
+          bio: parsed.data.bio ?? null,
+          city: parsed.data.city ?? null,
+          addressArea: parsed.data.addressArea ?? null,
+          avatarUrl: parsed.data.avatarUrl ?? null,
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return fail("That email is already registered to another account.");
+    }
+    throw error;
+  }
   revalidatePath("/dashboard/profile");
   return ok(undefined, "Profile saved.");
 }

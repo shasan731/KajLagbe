@@ -3,7 +3,7 @@ import { useFormState } from "react-dom";
 import { requestBookingAction } from "@/app/actions/booking";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { FormError, FieldError } from "@/components/forms/form-error";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { calculatePlatformFee, formatBDT } from "@/lib/money";
@@ -32,16 +32,23 @@ export function BookingForm({
   const [state, action] = useFormState(requestBookingAction, initialState);
   const [startAt, setStartAt] = useState("");
   const [endAt, setEndAt] = useState("");
+  const lastHandledState = useRef("");
   const router = useRouter();
+  const minDateTime = new Date().toISOString().slice(0, 16);
+  const stateId = state.ok ? state.data?.id : undefined;
+  const stateError = state.ok ? "" : state.error;
 
   useEffect(() => {
-    if (state && state.ok) {
+    const key = state.ok ? `ok:${stateId ?? ""}` : `err:${stateError ?? ""}`;
+    if (!key || key === lastHandledState.current) return;
+    lastHandledState.current = key;
+    if (state.ok) {
       toast.success("Booking requested!");
-      router.push(`/dashboard/bookings/${state.data?.id}`);
-    } else if (state && !state.ok && state.error) {
-      toast.error(state.error);
+      router.push(`/dashboard/bookings/${stateId}`);
+    } else if (stateError) {
+      toast.error(stateError);
     }
-  }, [state, router]);
+  }, [state.ok, stateError, stateId, router]);
 
   // Estimate
   let units = 1;
@@ -68,6 +75,7 @@ export function BookingForm({
           type="datetime-local"
           name="startAt"
           required
+          min={minDateTime}
           value={startAt}
           onChange={(e) => setStartAt(e.target.value)}
           className="input"
@@ -81,6 +89,7 @@ export function BookingForm({
             type="datetime-local"
             name="endAt"
             required
+            min={startAt || minDateTime}
             value={endAt}
             onChange={(e) => setEndAt(e.target.value)}
             className="input"

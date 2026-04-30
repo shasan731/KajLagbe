@@ -12,12 +12,12 @@ export function QuoteForm({ bookingId }: { bookingId: string }) {
   return (
     <form action={action} className="mt-3 space-y-2">
       <input type="hidden" name="bookingId" value={bookingId} />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <div>
           <label className="label">Quote amount (৳)</label>
           <input
             type="number"
-            min="0"
+            min="1"
             step="0.01"
             name="amount"
             required

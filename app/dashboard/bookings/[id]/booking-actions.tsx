@@ -1,5 +1,5 @@
 "use client";
-import { useTransition, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   acceptBookingAction,
@@ -38,6 +38,7 @@ export function BookingActions({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
   const [pickupOpen, setPickupOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
 
@@ -72,11 +73,7 @@ export function BookingActions({
           key="reject"
           disabled={pending}
           className="btn-secondary"
-          onClick={() => {
-            const reason = prompt("Reason for rejection?") || "";
-            if (!reason) return;
-            run("Rejected", () => rejectBookingAction(booking.id, reason));
-          }}
+          onClick={() => setRejectOpen((v) => !v)}
         >
           Reject
         </button>
@@ -232,6 +229,7 @@ export function BookingActions({
   return (
     <div className="card p-4 space-y-3">
       <div className="flex flex-wrap gap-2">{buttons}</div>
+      {rejectOpen && <RejectForm bookingId={booking.id} onDone={() => setRejectOpen(false)} />}
       {cancelOpen && <CancelForm bookingId={booking.id} onDone={() => setCancelOpen(false)} />}
       {pickupOpen && (
         <HandoverForm
@@ -251,16 +249,60 @@ export function BookingActions({
   );
 }
 
+function RejectForm({ bookingId, onDone }: { bookingId: string; onDone: () => void }) {
+  const [reason, setReason] = useState("");
+  const [pending, start] = useTransition();
+  const router = useRouter();
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!reason.trim()) return;
+    start(async () => {
+      const result = await rejectBookingAction(bookingId, reason);
+      if (result.ok) {
+        toast.success("Rejected");
+        onDone();
+        router.refresh();
+      } else {
+        toast.error(result.error || "Action failed.");
+      }
+    });
+  }
+
+  return (
+    <form onSubmit={submit} className="border-t border-gray-100 pt-3 space-y-2">
+      <textarea
+        required
+        rows={2}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="Reason for rejection"
+        className="input"
+      />
+      <div className="flex gap-2">
+        <button type="submit" disabled={pending} className="btn-secondary">
+          Reject booking
+        </button>
+        <button type="button" className="btn-ghost" onClick={onDone}>
+          Keep request
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function CancelForm({ bookingId, onDone }: { bookingId: string; onDone: () => void }) {
   const [state, action] = useFormState<
     { ok: boolean; error?: string },
     FormData
   >(cancelBookingAction, { ok: false, error: "" });
   const router = useRouter();
-  if (state.ok) {
-    onDone();
-    router.refresh();
-  }
+  useEffect(() => {
+    if (state.ok) {
+      onDone();
+      router.refresh();
+    }
+  }, [state.ok, onDone, router]);
   return (
     <form action={action} className="border-t border-gray-100 pt-3 space-y-2">
       <input type="hidden" name="bookingId" value={bookingId} />
@@ -299,10 +341,12 @@ function HandoverForm({
     FormData
   >(action, { ok: false, error: "" });
   const router = useRouter();
-  if (state.ok) {
-    onDone();
-    router.refresh();
-  }
+  useEffect(() => {
+    if (state.ok) {
+      onDone();
+      router.refresh();
+    }
+  }, [state.ok, onDone, router]);
   return (
     <form action={runAction} className="border-t border-gray-100 pt-3 space-y-2">
       <input type="hidden" name="bookingId" value={bookingId} />

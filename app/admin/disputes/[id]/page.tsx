@@ -31,6 +31,9 @@ export default async function AdminDisputeDetail({ params }: Props) {
 
   return (
     <div className="space-y-4">
+      <Link href="/admin/disputes" className="text-sm font-medium text-brand-700 hover:text-brand-800">
+        Back to disputes
+      </Link>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{dispute.title}</h1>

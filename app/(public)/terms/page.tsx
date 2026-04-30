@@ -8,7 +8,7 @@ export default function TermsPage() {
         By using KajLagbe, you agree to these terms. The MVP is provided as-is and is intended for legitimate rental and service exchanges in Bangladesh.
       </p>
       <p className="text-gray-700">
-        Users must be 18 or older. Listings must comply with Bangladeshi law and the platform's banned/restricted policies. The platform is not party to any rental contract; it facilitates connections and acts only as mediator in disputes.
+        Users must be 18 or older. Listings must comply with Bangladeshi law and the platform&apos;s banned/restricted policies. The platform is not party to any rental contract; it facilitates connections and acts only as mediator in disputes.
       </p>
     </div>
   );

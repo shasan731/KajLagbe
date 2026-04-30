@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
   return (
-    <footer className="border-t border-gray-200 bg-white mt-12">
+    <footer className={cn("border-t border-gray-200 bg-white mt-12", className)}>
       <div className="container-app py-8 grid gap-6 md:grid-cols-4 text-sm">
         <div>
           <div className="font-bold text-gray-900">{APP_NAME}</div>

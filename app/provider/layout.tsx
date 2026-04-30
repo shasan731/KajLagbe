@@ -3,6 +3,8 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 
+export const runtime = "nodejs";
+
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
@@ -29,9 +31,9 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
           </Link>
         </div>
       </div>
-      <main className="flex-1 pb-16 md:pb-0">{children}</main>
-      <MobileNav />
-      <Footer />
+      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      <MobileNav role="PROVIDER" />
+      <Footer className="hidden md:block" />
     </div>
   );
 }

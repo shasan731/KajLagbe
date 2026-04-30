@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "./db";
@@ -20,6 +21,8 @@ function getSecret(): Uint8Array {
 export type SessionPayload = {
   uid: string;
   role: UserRole;
+  status: User["status"];
+  tokenVersion: number;
 };
 
 export async function hashPassword(password: string): Promise<string> {
@@ -46,9 +49,16 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
       payload &&
       typeof payload === "object" &&
       typeof (payload as { uid?: unknown }).uid === "string" &&
-      typeof (payload as { role?: unknown }).role === "string"
+      typeof (payload as { role?: unknown }).role === "string" &&
+      typeof (payload as { status?: unknown }).status === "string" &&
+      typeof (payload as { tokenVersion?: unknown }).tokenVersion === "number"
     ) {
-      return { uid: payload.uid as string, role: payload.role as UserRole };
+      return {
+        uid: payload.uid as string,
+        role: payload.role as UserRole,
+        status: payload.status as User["status"],
+        tokenVersion: payload.tokenVersion as number,
+      };
     }
     return null;
   } catch {
@@ -56,8 +66,18 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
   }
 }
 
-export async function createSessionCookie(user: { id: string; role: UserRole }): Promise<void> {
-  const token = await signSession({ uid: user.id, role: user.role });
+export async function createSessionCookie(user: {
+  id: string;
+  role: UserRole;
+  status: User["status"];
+  tokenVersion: number;
+}): Promise<void> {
+  const token = await signSession({
+    uid: user.id,
+    role: user.role,
+    status: user.status,
+    tokenVersion: user.tokenVersion,
+  });
   cookies().set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -73,14 +93,24 @@ export async function destroySessionCookie(): Promise<void> {
 
 export type SessionUser = Pick<
   User,
-  "id" | "name" | "phone" | "email" | "role" | "status" | "trustScore" | "averageRating" | "totalReviews"
+  | "id"
+  | "name"
+  | "phone"
+  | "email"
+  | "role"
+  | "status"
+  | "tokenVersion"
+  | "trustScore"
+  | "averageRating"
+  | "totalReviews"
 >;
 
-export async function getCurrentUser(): Promise<SessionUser | null> {
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const token = cookies().get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
   const session = await verifySession(token);
   if (!session) return null;
+  if (session.status === "BANNED" || session.status === "SUSPENDED") return null;
   const user = await prisma.user.findUnique({
     where: { id: session.uid },
     select: {
@@ -90,15 +120,17 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       email: true,
       role: true,
       status: true,
+      tokenVersion: true,
       trustScore: true,
       averageRating: true,
       totalReviews: true,
     },
   });
   if (!user) return null;
+  if (user.tokenVersion !== session.tokenVersion) return null;
   if (user.status === "BANNED") return null;
   return user;
-}
+});
 
 export async function requireUser(): Promise<SessionUser> {
   const user = await getCurrentUser();

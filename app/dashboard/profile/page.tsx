@@ -29,7 +29,6 @@ export default async function ProfilePage() {
             city: profile?.city ?? "",
             addressArea: profile?.addressArea ?? "",
             avatarUrl: profile?.avatarUrl ?? "",
-            role: user.role,
           }}
         />
       </div>

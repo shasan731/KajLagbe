@@ -20,7 +20,7 @@ export default async function EarningsPage() {
   return (
     <div className="container-app py-6 space-y-4">
       <h1 className="text-2xl font-semibold">Earnings</h1>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="card p-4">
           <div className="text-sm text-gray-600">Gross (base fees)</div>
           <div className="mt-1 text-2xl font-semibold">{formatBDT(totalBase)}</div>

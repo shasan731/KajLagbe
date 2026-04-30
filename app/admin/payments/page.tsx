@@ -12,7 +12,7 @@ export default async function AdminPayments() {
   await requireAdmin();
   const payments = await prisma.payment.findMany({
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 50,
     include: {
       booking: {
         select: { id: true, listing: { select: { title: true } }, renter: { select: { name: true } } },

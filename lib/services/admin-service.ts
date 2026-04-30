@@ -6,6 +6,14 @@ import { slugify } from "../slug";
 
 type CurrentUser = { id: string; role: "CUSTOMER" | "PROVIDER" | "ADMIN" };
 
+async function isLastAdmin(userId: string) {
+  const [user, adminCount] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    prisma.user.count({ where: { role: "ADMIN", status: "ACTIVE" } }),
+  ]);
+  return user?.role === "ADMIN" && adminCount <= 1;
+}
+
 export async function adminDashboardStats() {
   const [
     totalUsers,
@@ -48,10 +56,24 @@ export async function setUserStatus(raw: unknown, adminUser: CurrentUser): Promi
   if (adminUser.role !== "ADMIN") return fail("Admin only.");
   const parsed = userStatusSchema.safeParse(raw);
   if (!parsed.success) return fail("Invalid input.");
-  await prisma.user.update({
-    where: { id: parsed.data.userId },
-    data: { status: parsed.data.status },
-  });
+  if (parsed.data.status !== "ACTIVE" && (await isLastAdmin(parsed.data.userId))) {
+    return fail("You cannot suspend or ban the last active admin.");
+  }
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: parsed.data.userId },
+      data: { status: parsed.data.status, tokenVersion: { increment: 1 } },
+    }),
+    prisma.auditLog.create({
+      data: {
+        userId: adminUser.id,
+        action: "user.status_update",
+        entityType: "User",
+        entityId: parsed.data.userId,
+        metadata: { status: parsed.data.status },
+      },
+    }),
+  ]);
   return ok();
 }
 
@@ -61,7 +83,21 @@ export async function setUserRole(
   adminUser: CurrentUser
 ): Promise<ActionResult> {
   if (adminUser.role !== "ADMIN") return fail("Admin only.");
-  await prisma.user.update({ where: { id: userId }, data: { role } });
+  if (role !== "ADMIN" && (await isLastAdmin(userId))) {
+    return fail("You cannot demote the last active admin.");
+  }
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: userId }, data: { role, tokenVersion: { increment: 1 } } }),
+    prisma.auditLog.create({
+      data: {
+        userId: adminUser.id,
+        action: "user.role_update",
+        entityType: "User",
+        entityId: userId,
+        metadata: { role },
+      },
+    }),
+  ]);
   return ok();
 }
 

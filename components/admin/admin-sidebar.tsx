@@ -51,3 +51,27 @@ export function AdminSidebar() {
     </aside>
   );
 }
+
+export function AdminMobileSections() {
+  const path = usePathname();
+  return (
+    <nav className="md:hidden border-b border-gray-200 bg-white">
+      <div className="container-app flex gap-2 overflow-x-auto py-2 text-sm no-scrollbar">
+        {items.map(({ href, label }) => {
+          const active = path === href || (href !== "/admin" && path.startsWith(href + "/"));
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`shrink-0 rounded-full px-3 py-1.5 ${
+                active ? "bg-brand-50 text-brand-800 font-medium" : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}

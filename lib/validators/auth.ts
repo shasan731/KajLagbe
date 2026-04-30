@@ -8,7 +8,7 @@ const phone = z
 const password = z
   .string()
   .min(8, "Password must be at least 8 characters")
-  .max(72, "Password is too long");
+  .refine((value) => new TextEncoder().encode(value).length <= 72, "Password is too long");
 
 export const registerSchema = z
   .object({

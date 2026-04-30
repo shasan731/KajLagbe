@@ -11,7 +11,7 @@ export default async function AdminBookings() {
   await requireAdmin();
   const bookings = await prisma.booking.findMany({
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 50,
     include: {
       listing: { select: { title: true } },
       renter: { select: { name: true } },

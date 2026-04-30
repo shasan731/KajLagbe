@@ -20,8 +20,9 @@ export function SubmitButton({
         ? "btn-danger"
         : "btn-primary";
   return (
-    <button type="submit" disabled={pending} className={cn(cls, className)}>
+    <button type="submit" disabled={pending} aria-busy={pending} className={cn(cls, className)}>
       {pending && <Loader2 size={16} className="animate-spin" />}
+      {pending && <span className="sr-only">Submitting...</span>}
       {children}
     </button>
   );

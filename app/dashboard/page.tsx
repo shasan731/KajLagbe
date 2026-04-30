@@ -30,9 +30,9 @@ export default async function DashboardHome() {
 
   return (
     <div className="container-app py-6 space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Hello, {user.name.split(" ")[0]}!</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="truncate text-2xl font-semibold">Hello, {user.name.split(" ")[0]}!</h1>
           <p className="text-sm text-gray-600">Here&apos;s what&apos;s happening on your account.</p>
         </div>
         <form action={logoutAction}>
@@ -40,7 +40,7 @@ export default async function DashboardHome() {
         </form>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <DashboardCard
           title="Upcoming bookings"
           value={upcoming}
@@ -91,7 +91,7 @@ export default async function DashboardHome() {
             {user.role !== "PROVIDER" && (
               <li>
                 <Link href="/dashboard/profile" className="text-brand-700 hover:underline">
-                  → Become a provider (manage role in profile)
+                  → Contact support to become a provider
                 </Link>
               </li>
             )}

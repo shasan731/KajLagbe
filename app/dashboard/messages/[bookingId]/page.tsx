@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { MessageThread } from "@/app/dashboard/bookings/[id]/message-thread";
@@ -33,6 +34,9 @@ export default async function MessageBookingPage({
 
   return (
     <div className="container-app py-6 space-y-4">
+      <Link href="/dashboard/messages" className="text-sm font-medium text-brand-700 hover:text-brand-800">
+        Back to messages
+      </Link>
       <h1 className="text-xl font-semibold">{booking.listing.title}</h1>
       <MessageThread
         bookingId={booking.id}

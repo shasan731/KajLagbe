@@ -12,7 +12,6 @@ type Defaults = {
   city: string;
   addressArea: string;
   avatarUrl: string;
-  role: string;
 };
 
 export function ProfileForm({ defaultValues }: { defaultValues: Defaults }) {
@@ -73,16 +72,6 @@ export function ProfileForm({ defaultValues }: { defaultValues: Defaults }) {
             className="input"
           />
         </div>
-      </div>
-      <div>
-        <label className="label">Account role</label>
-        <select name="role" defaultValue={defaultValues.role} className="input">
-          <option value="CUSTOMER">Customer</option>
-          <option value="PROVIDER">Provider</option>
-        </select>
-        <p className="text-xs text-gray-500 mt-1">
-          Switch to Provider to create listings.
-        </p>
       </div>
       {state.ok && state.message && (
         <p className="text-sm text-emerald-700">{state.message}</p>

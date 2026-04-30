@@ -153,6 +153,7 @@ model User {
   passwordHash    String
   role            UserRole    @default(CUSTOMER)
   status          UserStatus  @default(ACTIVE)
+  tokenVersion    Int         @default(0)
   trustScore      Int         @default(50)
   averageRating   Decimal     @default(0) @db.Decimal(3, 2)
   totalReviews    Int         @default(0)
@@ -175,6 +176,7 @@ model User {
   @@index([role])
   @@index([status])
   @@index([trustScore])
+  @@index([createdAt])
 }
 
 model UserProfile {
@@ -274,6 +276,7 @@ model Listing {
   @@index([locationArea])
   @@index([basePrice])
   @@index([averageRating])
+  @@index([viewCount])
   @@index([createdAt])
 }
 
@@ -357,6 +360,7 @@ model Booking {
   @@index([ownerId])
   @@index([status])
   @@index([startAt])
+  @@index([completedAt])
   @@index([createdAt])
 }
 
@@ -392,6 +396,7 @@ model Payment {
   booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
+  @@index([payerId])
   @@index([status])
   @@index([method])
   @@index([createdAt])
@@ -414,6 +419,7 @@ model HandoverRecord {
   booking           Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   media             HandoverMedia[]
 
+  @@unique([bookingId, type])
   @@index([bookingId])
   @@index([type])
 }

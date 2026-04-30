@@ -33,12 +33,29 @@ export function ReviewSection({
       <form action={action} className="mt-3 space-y-2">
         <input type="hidden" name="bookingId" value={bookingId} />
         <input type="hidden" name="rating" value={rating} />
-        <div className="flex items-center gap-1">
+        <div
+          className="flex items-center gap-1"
+          role="radiogroup"
+          aria-label="Rating"
+          onKeyDown={(event) => {
+            if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+              event.preventDefault();
+              setRating((value) => Math.min(5, value + 1));
+            }
+            if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+              event.preventDefault();
+              setRating((value) => Math.max(1, value - 1));
+            }
+          }}
+        >
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               type="button"
               key={n}
               onClick={() => setRating(n)}
+              role="radio"
+              aria-checked={n === rating}
+              aria-label={`${n} star${n === 1 ? "" : "s"}`}
               className="text-amber-500"
             >
               <Star size={26} fill={n <= rating ? "currentColor" : "none"} />

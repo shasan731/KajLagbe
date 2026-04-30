@@ -63,6 +63,11 @@ export default async function ListingDetailPage({ params }: Props) {
 
   return (
     <div className="container-app py-6 grid lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-3">
+        <Link href="/listings" className="text-sm font-medium text-brand-700 hover:text-brand-800">
+          Back to listings
+        </Link>
+      </div>
       <div className="lg:col-span-2 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {listing.images.length > 0 ? (
@@ -72,6 +77,10 @@ export default async function ListingDetailPage({ params }: Props) {
                 key={img.id}
                 src={img.url}
                 alt={img.alt ?? listing.title}
+                width={800}
+                height={600}
+                loading="lazy"
+                decoding="async"
                 className="w-full aspect-[4/3] object-cover rounded-xl border border-gray-200"
               />
             ))
@@ -158,7 +167,7 @@ export default async function ListingDetailPage({ params }: Props) {
       </div>
 
       <aside className="space-y-4">
-        <div className="card p-5 sticky top-20">
+        <div id="booking-card" className="card p-5 sticky top-20">
           <PriceDisplay amount={listing.basePrice} priceType={listing.priceType} size="lg" />
           <div className="mt-3 flex items-center gap-2">
             <UserAvatar name={listing.owner.name} url={listing.owner.profile?.avatarUrl} />
@@ -191,6 +200,16 @@ export default async function ListingDetailPage({ params }: Props) {
           )}
         </div>
       </aside>
+      {!isOwn && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-lg md:hidden">
+          <div className="mx-auto flex max-w-screen-sm items-center justify-between gap-3">
+            <PriceDisplay amount={listing.basePrice} priceType={listing.priceType} />
+            <a href="#booking-card" className="btn-primary shrink-0 text-sm">
+              Request to book
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -209,7 +228,7 @@ function Detail({
       <div className="text-xs text-gray-500 inline-flex items-center gap-1">
         {icon} {label}
       </div>
-      <div className="font-medium text-gray-900 capitalize">{value.toLowerCase()}</div>
+      <div className="font-medium text-gray-900">{value}</div>
     </div>
   );
 }

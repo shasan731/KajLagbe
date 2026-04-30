@@ -8,7 +8,7 @@ export default async function AuditLogs() {
   await requireAdmin();
   const logs = await prisma.auditLog.findMany({
     orderBy: { createdAt: "desc" },
-    take: 200,
+    take: 50,
     include: { user: { select: { name: true } } },
   });
   return (

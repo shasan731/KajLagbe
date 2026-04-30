@@ -32,6 +32,7 @@ export default async function ListingsPage({ searchParams }: Props) {
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(searchParams)) {
     if (typeof v === "string") params.set(k, v);
+    else if (Array.isArray(v)) v.forEach((value) => params.append(k, value));
   }
 
   function pageHref(p: number) {

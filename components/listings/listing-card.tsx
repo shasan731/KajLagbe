@@ -22,8 +22,11 @@ export function ListingCard({ listing }: { listing: CardListing }) {
           <img
             src={cover}
             alt={listing.title}
+            width={480}
+            height={360}
             className="h-full w-full object-cover transition group-hover:scale-[1.02]"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="grid h-full w-full place-items-center text-xs uppercase tracking-wide text-gray-400">

@@ -25,14 +25,14 @@ export default async function AdminListings({
     where: { status },
     orderBy: { updatedAt: "desc" },
     include: { owner: { select: { name: true } }, category: true },
-    take: 100,
+    take: 50,
   });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Listings</h1>
-        <div className="flex gap-1 overflow-x-auto">
+        <div className="flex flex-wrap gap-1 sm:justify-end">
           {STATUSES.map((s) => (
             <Link
               key={s}

@@ -37,8 +37,8 @@ export default async function MyBookingsPage() {
               href={`/dashboard/bookings/${b.id}`}
               className="flex items-center justify-between p-4 hover:bg-gray-50"
             >
-              <div>
-                <div className="font-medium">{b.listing.title}</div>
+              <div className="min-w-0">
+                <div className="truncate font-medium">{b.listing.title}</div>
                 <div className="text-xs text-gray-500">
                   Starts {formatDateTime(b.startAt)} · Total {formatBDT(b.totalAmount)}
                 </div>

@@ -14,9 +14,20 @@ const optionalText = z
   .optional()
   .or(z.literal("").transform(() => undefined));
 
-function containsBannedKeyword(text: string): boolean {
-  const lower = text.toLowerCase();
-  return BANNED_KEYWORDS.some((kw) => lower.includes(kw));
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function containsBannedKeyword(text: string): boolean {
+  const normalized = text
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .toLowerCase();
+
+  return BANNED_KEYWORDS.some((keyword) => {
+    const pattern = escapeRegExp(keyword.normalize("NFKC").toLowerCase()).replace(/\s+/g, "\\s+");
+    return new RegExp(`(^|[^a-z0-9])${pattern}([^a-z0-9]|$)`, "u").test(normalized);
+  });
 }
 
 export const listingSchema = z

@@ -4,7 +4,8 @@ import { ImageUrlInputList } from "@/components/forms/image-url-input-list";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { FormError, FieldError } from "@/components/forms/form-error";
 import { BD_CITIES } from "@/lib/constants";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type Category = { id: string; name: string; type: string | null };
 
@@ -55,6 +56,10 @@ export function ListingForm({
   const [listingType, setListingType] = useState<string>(defaultValues.listingType ?? "TOOL_ONLY");
   const fe = state.fieldErrors;
   const isToolOnly = listingType === "TOOL_ONLY";
+
+  useEffect(() => {
+    if (state.ok && state.message) toast.success(state.message);
+  }, [state.ok, state.message]);
 
   return (
     <form action={run} className="grid gap-4 md:grid-cols-2">
@@ -225,19 +230,21 @@ export function ListingForm({
           placeholder="Visible to bookers (no exact address)"
         />
       </div>
-      <div className="md:col-span-2 flex items-center gap-2">
-        <input
-          id="delivery"
-          type="checkbox"
-          name="deliveryAvailable"
-          defaultChecked={defaultValues.deliveryAvailable}
-          className="h-4 w-4 rounded border-gray-300 text-brand-600"
-        />
-        <label htmlFor="delivery" className="text-sm">
-          Delivery available (within service area)
-        </label>
-      </div>
-      <div>
+      {listingType !== "SKILL_ONLY" && (
+        <>
+          <div className="md:col-span-2 flex items-center gap-2">
+            <input
+              id="delivery"
+              type="checkbox"
+              name="deliveryAvailable"
+              defaultChecked={defaultValues.deliveryAvailable}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600"
+            />
+            <label htmlFor="delivery" className="text-sm">
+              Delivery available (within service area)
+            </label>
+          </div>
+          <div>
         <label className="label">Delivery base fee (৳)</label>
         <input
           type="number"
@@ -248,7 +255,7 @@ export function ListingForm({
           className="input"
         />
       </div>
-      <div>
+          <div>
         <label className="label">Delivery per-km fee (৳)</label>
         <input
           type="number"
@@ -258,7 +265,9 @@ export function ListingForm({
           defaultValue={String(defaultValues.deliveryPerKmFee ?? 0)}
           className="input"
         />
-      </div>
+          </div>
+        </>
+      )}
 
       <div className="md:col-span-2">
         <label className="label">Image URLs</label>
@@ -279,7 +288,7 @@ export function ListingForm({
       </div>
 
       <div className="md:col-span-2">
-        <label className="label">What's included</label>
+        <label className="label">What&apos;s included</label>
         <textarea
           name="includedItems"
           rows={2}

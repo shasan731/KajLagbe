@@ -39,8 +39,8 @@ export default async function MessagesIndex() {
                 href={`/dashboard/messages/${b.id}`}
                 className="flex items-center justify-between p-4 hover:bg-gray-50"
               >
-                <div>
-                  <div className="font-medium">{counterpart.name} · {b.listing.title}</div>
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{counterpart.name} - {b.listing.title}</div>
                   <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">
                     {last && (
                       <>

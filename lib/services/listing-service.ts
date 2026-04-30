@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "../db";
 import { uniqueSlug } from "../slug";
-import { listingSchema, type ListingInput } from "../validators/listing";
+import { containsBannedKeyword, listingSchema, type ListingInput } from "../validators/listing";
 import { fail, flattenZodError, ok, type ActionResult } from "../actions";
 import type { ListingStatus, Prisma } from "@prisma/client";
 import { createNotification } from "./notification-service";
@@ -148,6 +148,9 @@ export async function submitListingForReview(
   if (listing.status !== "DRAFT" && listing.status !== "REJECTED") {
     return fail("Only draft listings can be submitted for review.");
   }
+  if (containsBannedKeyword(`${listing.title} ${listing.description}`)) {
+    return fail("This listing contains banned keywords and cannot be submitted.");
+  }
   await prisma.listing.update({
     where: { id: listingId },
     data: { status: "PENDING_REVIEW" },
@@ -160,10 +163,17 @@ export async function approveListing(
   adminUser: CurrentUser
 ): Promise<ActionResult> {
   if (adminUser.role !== "ADMIN") return fail("Admin only.");
-  const listing = await prisma.listing.update({
+  const listing = await prisma.listing.findUnique({
     where: { id: listingId },
+    select: { ownerId: true, title: true, status: true },
+  });
+  if (!listing) return fail("Listing not found.");
+  if (listing.status !== "PENDING_REVIEW") return fail("Only pending listings can be approved.");
+  const updated = await prisma.listing.updateMany({
+    where: { id: listingId, status: "PENDING_REVIEW" },
     data: { status: "ACTIVE", adminNote: null },
   });
+  if (updated.count !== 1) return fail("Listing status changed. Please refresh and try again.");
   await createNotification(
     listing.ownerId,
     "SYSTEM",
@@ -179,10 +189,17 @@ export async function rejectListing(
   adminUser: CurrentUser
 ): Promise<ActionResult> {
   if (adminUser.role !== "ADMIN") return fail("Admin only.");
-  const listing = await prisma.listing.update({
+  const listing = await prisma.listing.findUnique({
     where: { id: listingId },
+    select: { ownerId: true, title: true, status: true },
+  });
+  if (!listing) return fail("Listing not found.");
+  if (listing.status !== "PENDING_REVIEW") return fail("Only pending listings can be rejected.");
+  const updated = await prisma.listing.updateMany({
+    where: { id: listingId, status: "PENDING_REVIEW" },
     data: { status: "REJECTED", adminNote: reason },
   });
+  if (updated.count !== 1) return fail("Listing status changed. Please refresh and try again.");
   await createNotification(
     listing.ownerId,
     "SYSTEM",
@@ -198,10 +215,19 @@ export async function suspendListing(
   adminUser: CurrentUser
 ): Promise<ActionResult> {
   if (adminUser.role !== "ADMIN") return fail("Admin only.");
-  const listing = await prisma.listing.update({
+  const listing = await prisma.listing.findUnique({
     where: { id: listingId },
+    select: { ownerId: true, title: true, status: true },
+  });
+  if (!listing) return fail("Listing not found.");
+  if (listing.status !== "ACTIVE" && listing.status !== "PENDING_REVIEW") {
+    return fail("Only active or pending listings can be suspended.");
+  }
+  const updated = await prisma.listing.updateMany({
+    where: { id: listingId, status: { in: ["ACTIVE", "PENDING_REVIEW"] } },
     data: { status: "SUSPENDED", adminNote: reason },
   });
+  if (updated.count !== 1) return fail("Listing status changed. Please refresh and try again.");
   await createNotification(
     listing.ownerId,
     "SYSTEM",
@@ -216,6 +242,15 @@ export async function archiveListing(listingId: string, currentUser: CurrentUser
   if (!listing) return fail("Listing not found.");
   if (listing.ownerId !== currentUser.id && currentUser.role !== "ADMIN") {
     return fail("Not authorized.");
+  }
+  const openBookings = await prisma.booking.count({
+    where: {
+      listingId,
+      status: { notIn: ["COMPLETED", "CANCELLED"] },
+    },
+  });
+  if (openBookings > 0) {
+    return fail("This listing has open bookings and cannot be archived yet.");
   }
   await prisma.listing.update({ where: { id: listingId }, data: { status: "ARCHIVED" } });
   return ok();
@@ -242,6 +277,8 @@ export async function getPublicListings(filters: PublicListingFilters) {
 
   const where: Prisma.ListingWhereInput = {
     status: "ACTIVE" satisfies ListingStatus,
+    owner: { status: "ACTIVE" },
+    category: { isActive: true },
   };
 
   if (filters.q) {
@@ -254,9 +291,13 @@ export async function getPublicListings(filters: PublicListingFilters) {
   if (filters.city) where.city = { equals: filters.city, mode: "insensitive" };
   if (filters.area) where.locationArea = { contains: filters.area, mode: "insensitive" };
   if (filters.categoryId) where.categoryId = filters.categoryId;
-  if (filters.categorySlug) where.category = { slug: filters.categorySlug };
-  if (filters.min !== undefined) where.basePrice = { ...(where.basePrice as object), gte: filters.min };
-  if (filters.max !== undefined) where.basePrice = { ...(where.basePrice as object), lte: filters.max };
+  if (filters.categorySlug) where.category = { isActive: true, slug: filters.categorySlug };
+  if (filters.min !== undefined || filters.max !== undefined) {
+    where.basePrice = {
+      ...(filters.min !== undefined ? { gte: filters.min } : {}),
+      ...(filters.max !== undefined ? { lte: filters.max } : {}),
+    };
+  }
   if (filters.delivery) where.deliveryAvailable = true;
 
   const orderBy: Prisma.ListingOrderByWithRelationInput =
@@ -293,8 +334,13 @@ export async function getPublicListings(filters: PublicListingFilters) {
 }
 
 export async function getListingBySlug(slug: string) {
-  return prisma.listing.findUnique({
-    where: { slug },
+  return prisma.listing.findFirst({
+    where: {
+      slug,
+      status: "ACTIVE",
+      owner: { status: "ACTIVE" },
+      category: { isActive: true },
+    },
     include: {
       category: true,
       images: { orderBy: { sortOrder: "asc" } },
@@ -319,10 +365,13 @@ export async function incrementViewCount(listingId: string) {
   });
 }
 
-export async function getProviderListings(providerId: string) {
+export async function getProviderListings(providerId: string, page = 1, pageSize = 50) {
+  const take = Math.min(MAX_PAGE_SIZE, Math.max(1, pageSize));
   return prisma.listing.findMany({
     where: { ownerId: providerId },
     orderBy: { updatedAt: "desc" },
+    skip: (Math.max(1, page) - 1) * take,
+    take,
     include: {
       category: true,
       images: { orderBy: { sortOrder: "asc" }, take: 1 },

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const paymentSubmitSchema = z.object({
   bookingId: z.string().min(1),
-  amount: z.coerce.number().min(0),
+  amount: z.coerce.number().positive("Payment amount must be greater than 0"),
   method: z.enum(["CASH", "BKASH", "NAGAD", "ROCKET", "BANK_TRANSFER", "CARD", "OTHER"]),
   type: z.enum([
     "RENTAL_FEE",

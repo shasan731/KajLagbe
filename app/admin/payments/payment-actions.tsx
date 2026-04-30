@@ -1,5 +1,5 @@
 "use client";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -18,6 +18,8 @@ export function PaymentRowActions({
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [reason, setReason] = useState("");
   function run(label: string, fn: () => Promise<{ ok: boolean; error?: string }>) {
     start(async () => {
       const r = await fn();
@@ -31,7 +33,7 @@ export function PaymentRowActions({
   }
 
   return (
-    <div className="flex gap-1">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       {status === "SUBMITTED" && (
         <>
           <button
@@ -44,14 +46,30 @@ export function PaymentRowActions({
           <button
             disabled={pending}
             className="btn-secondary text-xs"
-            onClick={() => {
-              const reason = prompt("Reason?") || "";
-              if (!reason) return;
-              run("Rejected", () => rejectPaymentAction(paymentId, reason));
-            }}
+            onClick={() => setRejectOpen((v) => !v)}
           >
             Reject
           </button>
+          {rejectOpen && (
+            <form
+              className="flex gap-1"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!reason.trim()) return;
+                run("Rejected", () => rejectPaymentAction(paymentId, reason.trim()));
+              }}
+            >
+              <input
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                className="input h-9 w-40 text-xs"
+                placeholder="Reject reason"
+              />
+              <button disabled={pending} className="btn-secondary text-xs">
+                Save
+              </button>
+            </form>
+          )}
         </>
       )}
       {status === "VERIFIED" && (

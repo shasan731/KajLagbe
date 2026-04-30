@@ -58,7 +58,13 @@ export function ListingFilters() {
   }
 
   return (
-    <form onSubmit={apply} className="card p-4 grid gap-3 md:grid-cols-12">
+    <form onSubmit={apply} className="card p-4">
+      <details className="group md:block">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-gray-900 md:hidden [&::-webkit-details-marker]:hidden">
+          Show filters
+          <span className="text-brand-700">Filter</span>
+        </summary>
+        <div className="mt-3 hidden gap-3 group-open:grid md:mt-0 md:grid md:grid-cols-12">
       <div className="md:col-span-4">
         <label className="label">Search</label>
         <input
@@ -145,6 +151,8 @@ export function ListingFilters() {
           Apply filters
         </button>
       </div>
+        </div>
+      </details>
     </form>
   );
 }

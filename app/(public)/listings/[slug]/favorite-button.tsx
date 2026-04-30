@@ -23,7 +23,8 @@ export function FavoriteButton({
         });
       }}
       className={`btn-secondary ${favored ? "text-red-600" : ""}`}
-      aria-label="Toggle favorite"
+      aria-pressed={favored}
+      aria-label={favored ? "Remove from favorites" : "Add to favorites"}
     >
       <Heart size={16} fill={favored ? "currentColor" : "none"} />
       {favored ? "Saved" : "Save"}

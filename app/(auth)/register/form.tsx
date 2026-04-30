@@ -41,7 +41,7 @@ export function RegisterForm() {
         />
         <FieldError messages={fe?.email} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="label">Password</label>
           <input
@@ -72,7 +72,7 @@ export function RegisterForm() {
           <option value="PROVIDER">Provider (rent out / offer skills)</option>
         </select>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="label">City</label>
           <select name="city" className="input" defaultValue="Dhaka">

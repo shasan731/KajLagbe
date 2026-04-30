@@ -39,12 +39,15 @@ export default async function NotificationsPage() {
               }`}
             >
               <span
+                aria-label={!n.readAt ? "Unread" : "Read"}
                 className={`mt-1 h-2 w-2 rounded-full ${
                   !n.readAt ? "bg-brand-500" : "bg-gray-300"
                 }`}
               />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">{n.title}</div>
+                <div className={`text-sm ${!n.readAt ? "font-semibold" : "font-medium"}`}>
+                  {n.title}
+                </div>
                 <div className="text-sm text-gray-700 line-clamp-2">{n.body}</div>
                 <div className="text-xs text-gray-500 mt-0.5">{timeAgo(n.createdAt)}</div>
               </div>

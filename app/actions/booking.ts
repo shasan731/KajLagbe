@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin, requireProvider, requireUser } from "@/lib/auth";
 import {
   acceptBooking,
   cancelBooking,
@@ -41,7 +41,7 @@ export async function requestBookingAction(
 }
 
 export async function acceptBookingAction(bookingId: string) {
-  const user = await requireUser();
+  const user = await requireProvider();
   const r = await acceptBooking(bookingId, user);
   revalidatePath(`/dashboard/bookings/${bookingId}`);
   revalidatePath(`/provider/bookings/${bookingId}`);
@@ -49,7 +49,7 @@ export async function acceptBookingAction(bookingId: string) {
 }
 
 export async function rejectBookingAction(bookingId: string, reason: string) {
-  const user = await requireUser();
+  const user = await requireProvider();
   const r = await rejectBooking(bookingId, reason, user);
   revalidatePath(`/dashboard/bookings/${bookingId}`);
   revalidatePath(`/provider/bookings/${bookingId}`);
@@ -57,7 +57,7 @@ export async function rejectBookingAction(bookingId: string, reason: string) {
 }
 
 export async function sendQuoteAction(_prev: unknown, fd: FormData): Promise<ActionResult> {
-  const user = await requireUser();
+  const user = await requireProvider();
   const data = form(fd);
   const r = await sendQuote(data, user);
   if (r.ok && typeof data.bookingId === "string") {
@@ -75,14 +75,14 @@ export async function confirmQuoteAction(bookingId: string) {
 }
 
 export async function confirmBookingAction(bookingId: string) {
-  const user = await requireUser();
+  const user = await requireAdmin();
   const r = await confirmBookingAfterPayment(bookingId, user);
   revalidatePath(`/admin/bookings/${bookingId}`);
   return r;
 }
 
 export async function markPickupScheduledAction(bookingId: string) {
-  const user = await requireUser();
+  const user = await requireProvider();
   return markPickupScheduled(bookingId, user);
 }
 
@@ -111,12 +111,12 @@ export async function confirmReturnAction(_prev: unknown, fd: FormData): Promise
 }
 
 export async function markServiceStartedAction(bookingId: string) {
-  const user = await requireUser();
+  const user = await requireProvider();
   return markServiceStarted(bookingId, user);
 }
 
 export async function markServiceCompletedAction(bookingId: string) {
-  const user = await requireUser();
+  const user = await requireProvider();
   return markServiceCompletedByProvider(bookingId, user);
 }
 

@@ -10,7 +10,7 @@ export default async function AdminDisputes() {
   await requireAdmin();
   const disputes = await prisma.dispute.findMany({
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 50,
     include: {
       raisedBy: { select: { name: true } },
       booking: { select: { listing: { select: { title: true } } } },

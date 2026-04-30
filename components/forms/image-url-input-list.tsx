@@ -32,13 +32,18 @@ export function ImageUrlInputList({
     <div className="space-y-2">
       {urls.map((u, i) => (
         <div key={i} className="flex gap-2">
-          <input
-            type="url"
-            placeholder="https://example.com/image.jpg"
-            value={u}
-            onChange={(e) => update(i, e.target.value)}
-            className="input flex-1"
-          />
+          <div className="flex-1">
+            <input
+              type="url"
+              placeholder="https://example.com/image.jpg"
+              value={u}
+              onChange={(e) => update(i, e.target.value)}
+              className="input"
+            />
+            {u.trim().length === 0 && urls.length > 1 && (
+              <p className="mt-1 text-xs text-gray-500">Empty rows will be ignored.</p>
+            )}
+          </div>
           <button
             type="button"
             className="btn-ghost px-2"
@@ -50,7 +55,7 @@ export function ImageUrlInputList({
         </div>
       ))}
       {urls.length < max && (
-        <button type="button" className="btn-ghost text-sm" onClick={add}>
+        <button type="button" className="btn-secondary text-sm" onClick={add}>
           <Plus size={16} /> Add another image URL
         </button>
       )}

@@ -68,21 +68,21 @@ export function MessageThread({
           })
         )}
       </div>
-      <form ref={formRef} action={action} className="mt-3 flex gap-2 items-start">
+      <form ref={formRef} action={action} className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start">
         <input type="hidden" name="bookingId" value={bookingId} />
         <textarea
           name="message"
           required
           rows={2}
           placeholder="Type a message"
-          className="input flex-1"
+          className="input min-w-0 flex-1"
         />
-        <div className="flex flex-col gap-1">
+        <div className="flex w-full flex-col gap-1 sm:w-44">
           <input
             name="attachmentUrl"
             type="url"
             placeholder="Attachment URL"
-            className="input w-44"
+            className="input w-full"
           />
           <SubmitButton>Send</SubmitButton>
         </div>

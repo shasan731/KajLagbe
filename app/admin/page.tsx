@@ -20,7 +20,7 @@ export default async function AdminHome() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Admin overview</h1>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <DashboardCard title="Total users" value={stats.totalUsers} href="/admin/users" icon={<Users size={18} />} />
         <DashboardCard title="Active providers" value={stats.totalProviders} icon={<Briefcase size={18} />} />
         <DashboardCard title="Pending listings" value={stats.pendingListings} href="/admin/listings?status=PENDING_REVIEW" icon={<ClipboardList size={18} />} />

@@ -36,7 +36,7 @@ export type BookingInput = z.infer<typeof bookingSchema>;
 
 export const quoteSchema = z.object({
   bookingId: z.string().min(1),
-  amount: z.coerce.number().min(0),
+  amount: z.coerce.number().positive("Quote amount must be greater than 0").max(1_000_000),
   note: z.string().trim().max(500).optional(),
 });
 

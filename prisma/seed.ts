@@ -297,7 +297,7 @@ async function main() {
   ];
 
   for (const s of samples) {
-    const slug = slugify(s.title) + "-" + Math.random().toString(36).slice(2, 6);
+    const slug = slugify(s.title);
     await prisma.listing.upsert({
       where: { slug },
       update: {},

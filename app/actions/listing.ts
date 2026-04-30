@@ -11,7 +11,8 @@ import {
   suspendListing,
   updateListing,
 } from "@/lib/services/listing-service";
-import type { ActionResult } from "@/lib/actions";
+import { fail, flattenZodError, type ActionResult } from "@/lib/actions";
+import { rejectListingSchema, suspendListingSchema } from "@/lib/validators/admin";
 
 function parseFormToInput(fd: FormData): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
@@ -59,11 +60,15 @@ export async function approveListingAction(listingId: string) {
   const admin = await requireAdmin();
   const r = await approveListing(listingId, admin);
   revalidatePath("/admin/listings");
+  revalidatePath("/");
+  revalidatePath("/listings");
   return r;
 }
 
 export async function rejectListingAction(listingId: string, reason: string) {
   const admin = await requireAdmin();
+  const parsed = rejectListingSchema.safeParse({ listingId, reason });
+  if (!parsed.success) return fail("Invalid rejection reason.", flattenZodError(parsed.error));
   const r = await rejectListing(listingId, reason, admin);
   revalidatePath("/admin/listings");
   return r;
@@ -71,6 +76,8 @@ export async function rejectListingAction(listingId: string, reason: string) {
 
 export async function suspendListingAction(listingId: string, reason: string) {
   const admin = await requireAdmin();
+  const parsed = suspendListingSchema.safeParse({ listingId, reason });
+  if (!parsed.success) return fail("Invalid suspension reason.", flattenZodError(parsed.error));
   const r = await suspendListing(listingId, reason, admin);
   revalidatePath("/admin/listings");
   return r;

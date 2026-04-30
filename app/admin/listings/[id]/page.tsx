@@ -66,6 +66,10 @@ export default async function AdminListingDetail({ params }: Props) {
               key={i.id}
               src={i.url}
               alt=""
+              width={240}
+              height={240}
+              loading="lazy"
+              decoding="async"
               className="w-full aspect-square object-cover rounded-lg border border-gray-200"
             />
           ))}
@@ -89,7 +93,7 @@ function Detail({
   return (
     <div>
       <div className="text-xs text-gray-500">{label}</div>
-      <div className="font-medium capitalize">{children ?? value?.toLowerCase()}</div>
+      <div className="font-medium">{children ?? value}</div>
     </div>
   );
 }

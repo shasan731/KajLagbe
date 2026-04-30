@@ -9,7 +9,7 @@ export default async function AdminReviews() {
   await requireAdmin();
   const reviews = await prisma.review.findMany({
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 50,
     include: {
       reviewer: { select: { name: true } },
       reviewedUser: { select: { name: true } },

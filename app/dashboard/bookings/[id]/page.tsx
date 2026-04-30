@@ -46,6 +46,9 @@ export default async function BookingDetailPage({ params }: Props) {
   return (
     <div className="container-app py-6 grid lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-4">
+        <Link href="/dashboard/bookings" className="text-sm font-medium text-brand-700 hover:text-brand-800">
+          Back to bookings
+        </Link>
         <div className="card p-5">
           <div className="flex items-start justify-between">
             <div>
@@ -77,6 +80,15 @@ export default async function BookingDetailPage({ params }: Props) {
             <Money label="Total" value={booking.totalAmount} bold />
           </div>
         </div>
+
+        <details className="card p-5 lg:hidden">
+          <summary className="cursor-pointer list-none font-semibold [&::-webkit-details-marker]:hidden">
+            Timeline
+          </summary>
+          <div className="mt-3">
+            <BookingTimeline history={booking.statusHistory} currentStatus={booking.status} />
+          </div>
+        </details>
 
         <BookingActions
           booking={JSON.parse(JSON.stringify(booking))}
@@ -123,7 +135,7 @@ export default async function BookingDetailPage({ params }: Props) {
           alreadyReviewed={booking.reviews.some((r) => r.reviewerId === user.id)}
         />
       </div>
-      <aside className="space-y-4">
+      <aside className="hidden space-y-4 lg:block">
         <div className="card p-5">
           <h3 className="font-semibold mb-3">Timeline</h3>
           <BookingTimeline history={booking.statusHistory} currentStatus={booking.status} />

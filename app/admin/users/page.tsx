@@ -9,7 +9,7 @@ export default async function AdminUsers() {
   await requireAdmin();
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 50,
   });
   return (
     <div className="space-y-4">

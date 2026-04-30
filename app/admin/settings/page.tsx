@@ -13,7 +13,8 @@ export default async function AdminSettings() {
         <p className="text-sm text-gray-700">
           Settings are stored in the <code>PlatformSetting</code> table. A UI editor is planned for the next release. Edit values via Prisma Studio for now.
         </p>
-        <table className="mt-4 w-full text-sm">
+        <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
           <thead>
             <tr className="text-left text-gray-500">
               <th className="py-1">Key</th>
@@ -31,6 +32,7 @@ export default async function AdminSettings() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

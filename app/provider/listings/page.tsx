@@ -36,7 +36,15 @@ export default async function ProviderListingsPage() {
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                 {l.images[0]?.url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.images[0].url} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={l.images[0].url}
+                    alt=""
+                    width={64}
+                    height={64}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
                 ) : null}
               </div>
               <div className="flex-1 min-w-0">

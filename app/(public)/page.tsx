@@ -4,12 +4,12 @@ import { ListingGrid } from "@/components/listings/listing-grid";
 import { ArrowRight, Wrench, Sparkles, Calendar, Shield } from "lucide-react";
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [featured, categories] = await Promise.all([
     prisma.listing.findMany({
-      where: { status: "ACTIVE" },
+      where: { status: "ACTIVE", owner: { status: "ACTIVE" }, category: { isActive: true } },
       orderBy: [{ averageRating: "desc" }, { createdAt: "desc" }],
       take: 8,
       include: {
@@ -58,7 +58,7 @@ export default async function HomePage() {
               </li>
             </ul>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="hidden grid-cols-2 gap-3 md:grid">
             {featured.slice(0, 4).map((l) => (
               <Link
                 key={l.id}
@@ -70,6 +70,10 @@ export default async function HomePage() {
                   <img
                     src={l.images[0].url}
                     alt={l.title}
+                    width={360}
+                    height={360}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover"
                   />
                 ) : (
